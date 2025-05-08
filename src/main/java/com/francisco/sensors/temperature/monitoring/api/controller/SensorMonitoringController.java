@@ -6,9 +6,12 @@ import com.francisco.sensors.temperature.monitoring.domain.model.SensorMonitorin
 import com.francisco.sensors.temperature.monitoring.domain.repository.SensorMonitoringRepository;
 import io.hypersistence.tsid.TSID;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.time.Duration;
 
 @RestController
 @RequestMapping("/api/sensors/{sensorId}/monitoring")
@@ -42,8 +45,15 @@ public class SensorMonitoringController {
 
 	@DeleteMapping("/enable")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@SneakyThrows
 	public void disable(@PathVariable TSID sensorId) {
 		SensorMonitoring sensorMonitoring = findByIdOrDefault(sensorId);
+
+		Boolean enabled = sensorMonitoring.getEnabled();
+		if (enabled != null && !enabled) {
+			Thread.sleep(Duration.ofSeconds(10));
+		}
+
 		sensorMonitoring.setEnabled(false);
 		sensorMonitoringRepository.saveAndFlush(sensorMonitoring);
 	}
